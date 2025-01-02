@@ -25,15 +25,35 @@
         .container {
             width: 80%;
             margin: 0 auto;
-            padding: 20px;
+            padding: 20px.
         }
         h2 {
             border-bottom: 2px solid #cfcfcf;
             padding-bottom: 10px;
-            color: #00ff00;
+            color: #00ff00
         }
         section {
             margin-bottom: 40px;
+        }
+        .btn {
+            background-color: #00ff00;
+            color: #1e1e1e;
+            border: none;
+            padding: 10px 20px.
+            text-align: center.
+            text-decoration: none.
+            display: inline-block.
+            font-size: 16px.
+            margin: 4px 2px.
+            cursor: pointer.
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease.
+        }
+        .btn:hover {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            transform: scale(1.05);
+            cursor: pointer;
         }
         footer {
             text-align: center;
@@ -45,12 +65,12 @@
 <body>
     <header>
         <div class="title">
-____        _   _                   ____            _    __       _ _       
+ ____        _   _                   ____            _    __       _ _       
 |  _ \ _   _| |_| |__   ___  _ __   |  _ \ ___  _ __| |_ / _| ___ | (_) ___  
 | |_) | | | | __| '_ \ / _ \| '_ \  | |_) / _ \| '__| __| |_ / _ \| | |/ _ \ 
 |  __/| |_| | |_| | | | (_) | | | | |  __/ (_) | |  | |_|  _| (_) | | | (_) |
 |_|    \__, |\__|_| |_|\___/|_| |_| |_|   \___/|_|   \__|_|  \___/|_|_|\___/ 
-       |___/                                                                   
+       |___/                                                                 
         </div>
     </header>
     <div class="container">
@@ -62,13 +82,20 @@ ____        _   _                   ____            _    __       _ _
             <h2>Projects</h2>
             <ul>
                 <li>
-                    <a href="elusive_button.txt">View: Elusive Button</a> |
-                    <a href="elusive_button.py">Download: Elusive Button</a> - A small program using Tkinter that makes an offer you can't refuse.</li>
+                    <button class="btn" onclick="window.location.href='elusive_button.txt';">View</button>
+                    <button class="btn" onclick="window.location.href='elusive_button.py';">Download</button>
+                    <strong>Elusive Button</strong> - A small program using Tkinter that makes an offer you can't refuse.
+                </li>
                 <li>
-                    <a href="cipher_app.txt">View: Cipher.exe python code</a> |
-                    <a href="Cipher.exe">Download: Cipher.exe</a> - Vigenere Cipher to encrypt/decrypt messages with
-                    a custom key.</li>
-                <li><a href="#">Project 3</a> - Brief description of Project 3.</li>
+                    <button class="btn" onclick="window.location.href='cipher_app.txt';">View</button>
+                    <button class="btn" onclick="window.location.href='Cipher.exe';">Download</button>
+                    <strong>Cipher.exe</strong> - Vigenere Cipher to encrypt/decrypt messages with a custom key.
+                </li>
+                <li>
+                    <button class="btn" onclick="window.location.href='#';">View</button>
+                    <button class="btn" onclick="window.location.href='#';">Download</button>
+                    <strong>Project 3</strong> - Brief description of Project 3.
+                </li>
             </ul>
         </section>
         <section>
