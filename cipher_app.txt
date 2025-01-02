@@ -1,0 +1,90 @@
+"""
+Title: Cipher
+Author: Paul King
+Date: 12-29-2024
+Description: This script creates an app the allows you encrypt/decrypt custom messages
+	     using a custom key. Based on the Vigenere Cipher. 
+"""
+
+
+
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QTextEdit, QLineEdit, QPushButton, QVBoxLayout
+from PyQt5.QtGui import QIcon
+
+def vigenere(message, key, direction=1):
+    key_index = 0
+    alphabet = 'abcdefghijklmnopqrstuvwxyz'
+    final_message = ''
+
+    for char in message.lower():
+        if not char.isalpha():
+            final_message += char
+        else:
+            key_char = key[key_index % len(key)]
+            key_index += 1
+            offset = alphabet.index(key_char)
+            index = alphabet.find(char)
+            new_index = (index + offset * direction) % len(alphabet)
+            final_message += alphabet[new_index]
+    
+    return final_message
+
+class VigenereCipherApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("Vigenère Cipher")
+        self.setWindowIcon(QIcon('favicon.ico'))  # Set the window icon
+
+        layout = QVBoxLayout()
+
+        self.label1 = QLabel("Enter text:")
+        layout.addWidget(self.label1)
+
+        self.text_input = QTextEdit()
+        layout.addWidget(self.text_input)
+
+        self.label2 = QLabel("Enter key:")
+        layout.addWidget(self.label2)
+
+        self.key_input = QLineEdit()
+        self.key_input.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.key_input)
+
+        self.encrypt_button = QPushButton("Encrypt")
+        self.encrypt_button.clicked.connect(self.encrypt)
+        layout.addWidget(self.encrypt_button)
+
+        self.decrypt_button = QPushButton("Decrypt")
+        self.decrypt_button.clicked.connect(self.decrypt)
+        layout.addWidget(self.decrypt_button)
+
+        self.result_label = QLabel("Result:")
+        layout.addWidget(self.result_label)
+
+        self.result_text = QTextEdit()
+        self.result_text.setReadOnly(True)
+        layout.addWidget(self.result_text)
+
+        self.setLayout(layout)
+
+    def encrypt(self):
+        message = self.text_input.toPlainText().strip()
+        key = self.key_input.text().strip()
+        result = vigenere(message, key)
+        self.result_text.setText(result)
+
+    def decrypt(self):
+        message = self.text_input.toPlainText().strip()
+        key = self.key_input.text().strip()
+        result = vigenere(message, key, -1)
+        self.result_text.setText(result)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = VigenereCipherApp()
+    ex.show()
+    sys.exit(app.exec_())
