@@ -1,0 +1,200 @@
+import os
+import json
+from datetime import datetime, timedelta
+
+# Get the directory of the current script
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the full path to the JSON file
+path_to_json = os.path.join(current_directory, 'expenses.json')
+
+# Open and read the JSON file
+with open(path_to_json, 'r') as file:
+    data = json.load(file)
+
+# Initialize the dictionaries for storing expenses by month and for Tobacco expenses
+expenses = {month: [] for month in [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+]}
+
+tobacco_expenses = {month: [] for month in [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+]}
+
+last_entry = None
+
+def get_month_name(date_str):
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    return date_obj.strftime("%B")
+
+def add_expense(date, amount, category):
+    category = category.lower()
+    month = get_month_name(date)
+    global last_entry
+
+    if "tobacco".startswith(category):
+        tobacco_expenses[month].append([date, amount])  # Store as list
+        last_entry = (date, amount, 'Tobacco')
+    elif "grocery".startswith(category):
+        expenses[month].append([date, amount])  # Store as list
+        last_entry = (date, amount, 'Grocery')
+    else:
+        print("Invalid category. Please enter 'Grocery' or 'Tobacco'.")
+        return
+
+def remove_expense(date, amount):
+    month = get_month_name(date)
+    global last_entry
+    found = False
+
+    for category, expense_list in [('Grocery', expenses), ('Tobacco', tobacco_expenses)]:
+        for entry in expense_list[month]:
+            if entry == [date, amount]:  # Compare as list
+                expense_list[month].remove(entry)
+                print(f"Removed {entry} from {category}")
+                found = True
+                break
+
+    if not found:
+        print("No matching entry found.")
+    else:
+        save_expenses_to_file()
+
+def save_expenses_to_file(filename=path_to_json):
+    data = {
+        'expenses': expenses,
+        'tobacco_expenses': tobacco_expenses
+    }
+    try:
+        with open(filename, "w") as file:
+            json.dump(data, file)
+       # print(f"Expenses saved to {filename}")
+    except Exception as e:
+        print(f"Error saving expenses: {e}")
+
+def load_expenses_from_file(filename=path_to_json):
+    global expenses, tobacco_expenses
+    try:
+        if os.path.exists(filename):
+            with open(filename, "r") as file:
+                data = json.load(file)
+
+                # Directly replace the entire dictionary
+                expenses = data.get('expenses', expenses)
+                tobacco_expenses = data.get('tobacco_expenses', tobacco_expenses)
+
+           # print(f"Expenses loaded from {filename}")
+           # print("Expenses:", json.dumps(expenses, indent=2))
+           # print("Tobacco Expenses:", json.dumps(tobacco_expenses, indent=2))
+        else:
+            print(f"{filename} does not exist. Starting with an empty expenses list.")
+    except Exception as e:
+        print(f"Error loading expenses: {e}")
+
+def print_total_expenses():
+    print("\nTotal Expenses by Month:")
+    grocery_year_total = 0
+    for month, expense_list in expenses.items():
+        total = sum(amount for date, amount in expense_list)
+        grocery_year_total += total
+        print(f"{month} (Grocery): ${total:.2f}")
+
+    print(f"\nYEAR TOTAL (Grocery): ${grocery_year_total:.2f}\n")
+
+    tobacco_year_total = 0
+    for month, expense_list in tobacco_expenses.items():
+        total = sum(amount for date, amount in expense_list)
+        tobacco_year_total += total
+        print(f"{month} (Tobacco): ${total:.2f}")
+
+    print(f"\nYEAR TOTAL (Tobacco): ${tobacco_year_total:.2f}")
+
+def calculate_total_for_period(month, expenses_dict):
+    current_year = datetime.now().year
+    month_index = datetime.strptime(month, "%B").month
+
+    # Calculate end date as the 25th of the current month
+    end_date = datetime.strptime(f"{current_year}-{month_index}-25", "%Y-%m-%d")
+
+    # Calculate start date as the 26th of the previous month
+    if month_index == 1:
+        # If January, previous month is December of the previous year
+        start_date = end_date.replace(month=12, year=current_year-1, day=26)
+    else:
+        start_date = end_date.replace(month=month_index-1, day=26)
+
+   # print(f"Calculating total for period: {start_date} to {end_date}")
+
+    total = 0
+    for expense_month, expense_list in expenses_dict.items():
+        for date, amount in expense_list:
+            expense_date = datetime.strptime(date, "%Y-%m-%d")
+            if start_date <= expense_date <= end_date:
+               # print(f"Adding {amount} for date {expense_date}")
+                total += amount
+    return total
+
+def print_month_details(month, category):
+    month = month.capitalize()
+    category = category.lower()
+    print(f"\nDetails for {month} ({category.capitalize()}):")
+
+    if "grocery".startswith(category) and month in expenses:
+        total = calculate_total_for_period(month, expenses)
+        for date, amount in expenses[month]:
+            print(f"{date}: ${amount:.2f}")
+    elif "tobacco".startswith(category) and month in tobacco_expenses:
+        total = calculate_total_for_period(month, tobacco_expenses)
+        for date, amount in tobacco_expenses[month]:
+            print(f"{date}: ${amount:.2f}")
+    else:
+        print(f"No data for {month} in {category.capitalize()} category.")
+        return
+
+    print(f"Total for Period: ${total:.2f}")
+
+def main():
+    current_directory = os.getcwd()
+   # print(f"Current working directory: {current_directory}")
+    load_expenses_from_file()  # Load existing expenses at the start
+    print_total_expenses()  # Print totals before asking for input
+
+    while True:
+        if last_entry:
+            print(f"Last entry - Date: {last_entry[0]}, Amount: ${last_entry[1]:.2f}, Category: {last_entry[2]}")
+
+        action = input("\nEnter 'd' to display a month's data, 'a' to add an expense, 'r' to remove an expense, or 'q' to quit: ").lower()
+        if action == 'q':
+            break
+        elif action == 'd':
+            month = input("Enter the month name: ").capitalize()
+            category = input("Enter the category (Grocery/Tobacco): ").lower()
+            print_month_details(month, category)
+        elif action == 'a':
+            date = input("Enter the date (YYYY-MM-DD): ")
+            try:
+                amount = float(input("Enter the amount: "))
+                category = input("Enter the category (Grocery/Tobacco): ").lower()
+                add_expense(date, amount, category)
+                print_total_expenses()
+            except ValueError as e:
+                print(f"Invalid input: {e}")
+            save_expenses_to_file()  # Save after each entry
+        elif action == 'r':
+            date = input("Enter the date (YYYY-MM-DD): ")
+            try:
+                amount = float(input("Enter the amount: "))
+                remove_expense(date, amount)
+            except ValueError as e:
+                print(f"Invalid input: {e}")
+        else:
+            print("Invalid option. Please try again.")
+
+    save_expenses_to_file()
+    print("\nFinal Total Expenses by Month:")
+    print_total_expenses()
+
+if __name__ == "__main__":
+    main()
